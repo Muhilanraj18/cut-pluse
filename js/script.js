@@ -18,7 +18,7 @@ window.addEventListener('load', reveal);
 // ==========================
 // Counter Animation on scroll
 // ==========================
-const counters = document.querySelectorAll('.counter-box span');
+const counters = document.querySelectorAll('.stat h3');
 let countersStarted = false;
 
 function animateCounters() {
@@ -32,10 +32,10 @@ function animateCounters() {
       const target = +counter.getAttribute('data-target');
       let current = 0;
       const updateCounter = () => {
-        current += Math.ceil(target / 200);
+        current += Math.ceil(target / 100);
         if (current < target) {
           counter.innerText = current;
-          setTimeout(updateCounter, 10);
+          setTimeout(updateCounter, 20);
         } else {
           counter.innerText = target;
         }
@@ -50,29 +50,11 @@ window.addEventListener('scroll', animateCounters);
 window.addEventListener('load', animateCounters);
 
 // ==========================
-// Hero Section (carousel + gradient + particles)
+// Hero Section: Gradient + Particles
 // ==========================
-window.addEventListener('load', () => {
-  const hero = document.querySelector('.hero');
-  if (!hero) return;
-
-  // -------- Hero Image Carousel --------
-  const heroImages = document.querySelectorAll('.hero-carousel img');
-  let heroIndex = 0;
-
-  function showHeroImage(i) {
-    heroImages.forEach(img => img.classList.remove('active'));
-    heroImages[i].classList.add('active');
-  }
-
-  showHeroImage(heroIndex);
-
-  setInterval(() => {
-    heroIndex = (heroIndex + 1) % heroImages.length;
-    showHeroImage(heroIndex);
-  }, 3000);
-
-  // -------- Hero Gradient Animation --------
+const hero = document.querySelector('.hero');
+if (hero) {
+  // Gradient animation
   let hue = 0;
   function animateHeroBackground() {
     hue += 0.5;
@@ -81,7 +63,7 @@ window.addEventListener('load', () => {
   }
   animateHeroBackground();
 
-  // -------- Hero Particle Effect --------
+  // Particle effect
   const canvas = document.createElement('canvas');
   hero.appendChild(canvas);
   canvas.style.position = 'absolute';
@@ -127,10 +109,30 @@ window.addEventListener('load', () => {
     canvas.width = hero.offsetWidth;
     canvas.height = hero.offsetHeight;
   });
-});
+}
 
 // ==========================
-// Projects Slider
+// Projects Auto Horizontal Scroll
+// ==========================
+const projectContainer = document.querySelector('.project-horizontal');
+let scrollAmount = 0;
+
+function autoScrollProjects() {
+  if (!projectContainer) return;
+  scrollAmount += 2;
+  if (scrollAmount >= projectContainer.scrollWidth - projectContainer.clientWidth) {
+    scrollAmount = 0;
+  }
+  projectContainer.scrollTo({
+    left: scrollAmount,
+    behavior: 'smooth'
+  });
+}
+
+setInterval(autoScrollProjects, 20);
+
+// ==========================
+// Projects Slider (manual + auto)
 // ==========================
 const slider = document.querySelector('.project-list');
 const slides = document.querySelectorAll('.project-item');
@@ -140,7 +142,7 @@ let index = 0;
 let slideInterval;
 
 function showSlide(i) {
-  if (!slider) return;
+  if (!slider || slides.length === 0) return;
   if (i < 0) index = slides.length - 1;
   else if (i >= slides.length) index = 0;
   else index = i;
@@ -174,3 +176,4 @@ if (prevBtn && nextBtn) {
 
 // Start auto slide
 startSlide();
+
