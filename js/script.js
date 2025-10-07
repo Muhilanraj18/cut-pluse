@@ -2,16 +2,12 @@
 // Scroll Reveal for animate-up
 // ==========================
 const animateElements = document.querySelectorAll('.animate-up');
-
 function reveal() {
   animateElements.forEach(el => {
     const top = el.getBoundingClientRect().top;
-    if (top < window.innerHeight - 100) {
-      el.classList.add('active');
-    }
+    if (top < window.innerHeight - 100) el.classList.add('active');
   });
 }
-
 window.addEventListener('scroll', reveal);
 window.addEventListener('load', reveal);
 
@@ -34,10 +30,10 @@ function animateCounters() {
       const updateCounter = () => {
         current += Math.ceil(target / 100);
         if (current < target) {
-          counter.innerText = current;
+          counter.innerText = current + "+";
           setTimeout(updateCounter, 20);
         } else {
-          counter.innerText = target;
+          counter.innerText = target + "+";
         }
       };
       updateCounter();
@@ -50,15 +46,17 @@ window.addEventListener('scroll', animateCounters);
 window.addEventListener('load', animateCounters);
 
 // ==========================
-// Hero Section: Gradient + Particles
+// Hero Section Gradient + Particles
 // ==========================
 const hero = document.querySelector('.hero');
 if (hero) {
-  // Gradient animation
   let hue = 0;
   function animateHeroBackground() {
     hue += 0.5;
-    hero.style.background = `linear-gradient(135deg, hsl(${hue}, 80%, 30%), hsl(${(hue + 60) % 360}, 80%, 30%))`;
+    // Avoid green (60-180)
+    const hue1 = (hue % 360 < 60 || hue % 360 > 180) ? hue % 360 : 60;
+    const hue2 = ((hue + 60) % 360 < 60 || (hue + 60) % 360 > 180) ? (hue + 60) % 360 : 60;
+    hero.style.background = `linear-gradient(135deg, hsl(${hue1}, 90%, 40%), hsl(${hue2}, 80%, 35%))`;
     requestAnimationFrame(animateHeroBackground);
   }
   animateHeroBackground();
@@ -77,8 +75,8 @@ if (hero) {
   canvas.height = hero.offsetHeight;
   const ctx = canvas.getContext('2d');
 
-  let particles = [];
-  for (let i = 0; i < 50; i++) {
+  const particles = [];
+  for (let i = 0; i < 200; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
@@ -112,68 +110,61 @@ if (hero) {
 }
 
 // ==========================
-// Projects Auto Horizontal Scroll
+// Projects Infinite Auto Scroll
 // ==========================
 const projectContainer = document.querySelector('.project-horizontal');
-let scrollAmount = 0;
+if (projectContainer) {
+  let scrollPos = 0;
+  let scrollSpeed = 1;
+  let scrolling = true;
 
-function autoScrollProjects() {
-  if (!projectContainer) return;
-  scrollAmount += 2;
-  if (scrollAmount >= projectContainer.scrollWidth - projectContainer.clientWidth) {
-    scrollAmount = 0;
+  // Duplicate content for seamless infinite scroll
+  projectContainer.innerHTML += projectContainer.innerHTML;
+
+  // Pause on hover
+  projectContainer.addEventListener('mouseenter', () => scrolling = false);
+  projectContainer.addEventListener('mouseleave', () => scrolling = true);
+
+  function autoScroll() {
+    if (scrolling) {
+      scrollPos += scrollSpeed;
+      if (scrollPos >= projectContainer.scrollWidth / 2) scrollPos = 0;
+      projectContainer.scrollLeft = scrollPos;
+    }
+    requestAnimationFrame(autoScroll);
   }
-  projectContainer.scrollTo({
-    left: scrollAmount,
-    behavior: 'smooth'
-  });
+  autoScroll();
 }
 
-setInterval(autoScrollProjects, 20);
-
 // ==========================
-// Projects Slider (manual + auto)
+// Optional Slider (manual + auto)
 // ==========================
 const slider = document.querySelector('.project-list');
-const slides = document.querySelectorAll('.project-item');
-const prevBtn = document.querySelector('.prev');
-const nextBtn = document.querySelector('.next');
-let index = 0;
-let slideInterval;
-
-function showSlide(i) {
-  if (!slider || slides.length === 0) return;
-  if (i < 0) index = slides.length - 1;
-  else if (i >= slides.length) index = 0;
-  else index = i;
-
-  slider.style.transform = `translateX(-${index * 100}%)`;
-}
-
-// Auto slide every 2s
-function startSlide() {
-  if (!slider) return;
-  slideInterval = setInterval(() => {
-    showSlide(index + 1);
-  }, 2000);
-}
-
-// Stop auto slide on hover
 if (slider) {
+  const slides = document.querySelectorAll('.project-item');
+  const prevBtn = document.querySelector('.prev');
+  const nextBtn = document.querySelector('.next');
+  let index = 0;
+  let slideInterval;
+
+  function showSlide(i) {
+    if (i < 0) index = slides.length - 1;
+    else if (i >= slides.length) index = 0;
+    else index = i;
+    slider.style.transform = `translateX(-${index * 100}%)`;
+  }
+
+  function startSlide() {
+    slideInterval = setInterval(() => showSlide(index + 1), 2000);
+  }
+
   slider.addEventListener('mouseenter', () => clearInterval(slideInterval));
   slider.addEventListener('mouseleave', startSlide);
+
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener('click', () => showSlide(index - 1));
+    nextBtn.addEventListener('click', () => showSlide(index + 1));
+  }
+
+  startSlide();
 }
-
-// Manual buttons
-if (prevBtn && nextBtn) {
-  prevBtn.addEventListener('click', () => {
-    showSlide(index - 1);
-  });
-  nextBtn.addEventListener('click', () => {
-    showSlide(index + 1);
-  });
-}
-
-// Start auto slide
-startSlide();
-
